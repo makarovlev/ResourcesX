@@ -1,0 +1,10 @@
+example_name:
+  id: 1
+  ore: IRON_ORE
+  coordinates:
+    world: rpgwar
+    x: 100
+    y: 100
+    z: 100
+  cooldown: 60
+  count: 1,2

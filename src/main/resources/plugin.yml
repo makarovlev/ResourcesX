@@ -1,0 +1,7 @@
+name: ResourcesX
+version: '${project.version}'
+main: com.gachicraft.resourcesx.ResourcesX
+api-version: '1.20'
+authors: [GachiCraft]
+depend: [packetevents]
+description: Custom MMORPG resource mining for Purpur 1.20.6.

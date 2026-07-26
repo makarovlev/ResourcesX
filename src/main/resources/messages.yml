@@ -1,0 +1,14 @@
+prefix: "&8[&6ResourcesX&8] "
+mining:
+  locked-by-other: "&cЭту руду уже добывает другой игрок."
+  too-weak-pickaxe: "&cЭтот блок слишком крепкий для вашей кирки."
+  progress-bar: "%bar% &f%percent%%"
+  progress-reset: "&7Прогресс добычи сброшен."
+  inventory-full: "&eИнвентарь полон, руда упала на землю."
+  no-permission-region: "&cЗдесь нельзя добывать руду."
+config:
+  duplicate-id: "&cОбнаружен дублирующийся id (%id%) у точки '%name%', точка отключена."
+  invalid-ore-type: "&cНеизвестный тип руды '%ore%' у точки '%name%', точка отключена."
+  missing-protection-entry: "&cДля руды %ore% нет настроек в protectionOres, точка временно отключена."
+admin:
+  reload-success: "&aКонфигурация перезагружена."
