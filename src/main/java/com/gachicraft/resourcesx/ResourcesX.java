@@ -1,5 +1,6 @@
 package com.gachicraft.resourcesx;
 
+import com.gachicraft.resourcesx.command.ResourcesXCommand;
 import com.gachicraft.resourcesx.config.ConfigManager;
 import com.gachicraft.resourcesx.listener.BlockBreakGuardListener;
 import com.gachicraft.resourcesx.listener.PlayerQuitListener;
@@ -27,6 +28,7 @@ public final class ResourcesX extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BlockBreakGuardListener(configManager), this);
         getServer().getPluginManager().registerEvents(new PlayerQuitListener(miningManager), this);
         getServer().getPluginManager().registerEvents(new PlayerWorldChangeListener(miningManager), this);
+        getCommand("resourcesx").setExecutor(new ResourcesXCommand(configManager, miningManager));
     }
 
     @Override

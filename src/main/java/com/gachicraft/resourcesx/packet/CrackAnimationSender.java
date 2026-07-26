@@ -1,7 +1,7 @@
 package com.gachicraft.resourcesx.packet;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.protocol.world.BlockPosition;
+import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockBreakAnimation;
 import com.gachicraft.resourcesx.config.ConfigManager;
 import org.bukkit.Location;
@@ -18,7 +18,7 @@ public final class CrackAnimationSender {
     public void clear(Player player, Location location) { send(player, location, -1); }
     private void send(Player player, Location location, int stage) {
         int entityId = Math.abs((player.getUniqueId().toString() + location.toString()).hashCode());
-        WrapperPlayServerBlockBreakAnimation packet = new WrapperPlayServerBlockBreakAnimation(entityId, new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ()), (byte) stage);
+        WrapperPlayServerBlockBreakAnimation packet = new WrapperPlayServerBlockBreakAnimation(entityId, new Vector3i(location.getBlockX(), location.getBlockY(), location.getBlockZ()), (byte) stage);
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, packet);
     }
 }

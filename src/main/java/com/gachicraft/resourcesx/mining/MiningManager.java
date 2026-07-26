@@ -85,11 +85,18 @@ public final class MiningManager {
         if (player != null) cracks.clear(player, session.orePoint().location());
     }
 
-    public void shutdown() { sessions.keySet().forEach(id -> reset(id, true)); }
+    public void resetAll() {
+        for (UUID playerId : new java.util.HashSet<>(sessions.keySet())) {
+            reset(playerId, true);
+        }
+    }
+
+    public void shutdown() { resetAll(); }
 
     private void damageTool(ItemStack tool, int amount) {
         ItemMeta meta = tool.getItemMeta();
-        if (!(meta instanceof Damageable damageable)) return;
+        if (!(meta instanceof Damageable)) return;
+        Damageable damageable = (Damageable) meta;
         int unbreaking = tool.getEnchantmentLevel(Enchantment.DURABILITY);
         int applied = Math.max(1, amount - unbreaking);
         damageable.setDamage(damageable.getDamage() + applied);
@@ -97,15 +104,23 @@ public final class MiningManager {
     }
 
     private Material dropFor(Material ore) {
-        return switch (ore) {
-            case IRON_ORE -> Material.RAW_IRON;
-            case GOLD_ORE -> Material.RAW_GOLD;
-            case COPPER_ORE -> Material.RAW_COPPER;
-            case COAL_ORE -> Material.COAL;
-            case DIAMOND_ORE -> Material.DIAMOND;
-            case EMERALD_ORE -> Material.EMERALD;
-            case LAPIS_ORE -> Material.LAPIS_LAZULI;
-            default -> ore;
-        };
+        switch (ore) {
+            case IRON_ORE:
+                return Material.RAW_IRON;
+            case GOLD_ORE:
+                return Material.RAW_GOLD;
+            case COPPER_ORE:
+                return Material.RAW_COPPER;
+            case COAL_ORE:
+                return Material.COAL;
+            case DIAMOND_ORE:
+                return Material.DIAMOND;
+            case EMERALD_ORE:
+                return Material.EMERALD;
+            case LAPIS_ORE:
+                return Material.LAPIS_LAZULI;
+            default:
+                return ore;
+        }
     }
 }
