@@ -1,6 +1,7 @@
 configVersion: 1.0.0
 settings:
   idle-reset-seconds: 2
+  hit-cooldown-millis: 833
   replacement-block: COBBLESTONE
   actionbar-bar-length: 10
   use-crack-animation: true

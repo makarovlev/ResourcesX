@@ -24,6 +24,7 @@ public final class ConfigManager {
     private OrePointRegistry registry = new OrePointRegistry();
     private Material replacementBlock;
     private int idleResetSeconds;
+    private long hitCooldownMillis;
     private int barLength;
     private boolean crackAnimation;
 
@@ -36,6 +37,7 @@ public final class ConfigManager {
         replacementBlock = Material.matchMaterial(config.getString("settings.replacement-block", "COBBLESTONE"));
         if (replacementBlock == null || !replacementBlock.isBlock()) replacementBlock = Material.COBBLESTONE;
         idleResetSeconds = Math.max(1, config.getInt("settings.idle-reset-seconds", 2));
+        hitCooldownMillis = Math.max(1L, config.getLong("settings.hit-cooldown-millis", 833L));
         barLength = Math.max(1, config.getInt("settings.actionbar-bar-length", 10));
         crackAnimation = config.getBoolean("settings.use-crack-animation", true);
         loadOreTypes(config);
@@ -76,7 +78,9 @@ public final class ConfigManager {
             if (Bukkit.getWorld(world) == null) { plugin.getLogger().warning("World '" + world + "' for ore point '" + name + "' is not loaded, point disabled."); continue; }
             Location location = new Location(Bukkit.getWorld(world), oresConfig.getInt(name + ".coordinates.x"), oresConfig.getInt(name + ".coordinates.y"), oresConfig.getInt(name + ".coordinates.z"));
             int[] counts = parseCounts(oresConfig.getString(name + ".count", "1"));
-            next.register(new OrePoint(new OrePointConfig(name, id, ore, location, Math.max(1, oresConfig.getInt(name + ".cooldown", 60)), counts)));
+            OrePoint point = new OrePoint(new OrePointConfig(name, id, ore, location, Math.max(1, oresConfig.getInt(name + ".cooldown", 60)), counts));
+            next.register(point);
+            point.spawnBlock();
         }
         registry = next;
     }
@@ -94,6 +98,7 @@ public final class ConfigManager {
     public PickaxeConfig pickaxe(Material material) { return pickaxes.get(material); }
     public Material replacementBlock() { return replacementBlock; }
     public int idleResetSeconds() { return idleResetSeconds; }
+    public long hitCooldownMillis() { return hitCooldownMillis; }
     public int barLength() { return barLength; }
     public boolean crackAnimation() { return crackAnimation; }
 }

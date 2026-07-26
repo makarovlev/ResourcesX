@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -41,6 +42,7 @@ public final class MiningManager {
         if (block == null) return;
         OrePoint point = config.registry().get(block.getLocation()).orElse(null);
         if (point == null || point.depleted()) return;
+        if (block.getType() != point.ore()) return;
         if (!locks.tryLock(point.location(), player.getUniqueId())) { player.sendMessage(config.messages().format("mining.locked-by-other")); return; }
 
         ItemStack tool = player.getInventory().getItemInMainHand();
@@ -48,10 +50,15 @@ public final class MiningManager {
         OreTypeConfig oreType = config.oreType(point.ore());
         if (pickaxe == null || oreType == null || pickaxe.level() < oreType.level()) { player.sendMessage(config.messages().format("mining.too-weak-pickaxe")); locks.unlock(point.location()); return; }
 
-        player.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, config.idleResetSeconds() * 20 + 10, 255, false, false, false));
         MiningSession session = sessions.computeIfAbsent(player.getUniqueId(), id -> new MiningSession(id, point));
         if (!session.orePoint().location().equals(point.location())) reset(player.getUniqueId(), true);
         session = sessions.computeIfAbsent(player.getUniqueId(), id -> new MiningSession(id, point));
+
+        long now = System.currentTimeMillis();
+        if (now - session.lastHitMillis() < config.hitCooldownMillis()) return;
+        session.setLastHitMillis(now);
+
+        player.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 6, 255, false, false, false));
         applyHit(player, session, pickaxe.force(), oreType);
     }
 
@@ -75,7 +82,7 @@ public final class MiningManager {
         Material drop = dropFor(point.ore());
         boolean full = InventoryUtil.giveOrDrop(player, new ItemStack(drop, point.randomDropCount()), point.location().toCenterLocation());
         if (full) player.sendMessage(config.messages().format("mining.inventory-full"));
-        damageTool(player.getInventory().getItemInMainHand(), oreType.damage());
+        damageTool(player, player.getInventory().getItemInMainHand(), oreType.damage());
         point.location().getBlock().setType(config.replacementBlock(), false);
         point.setDepleted(true);
         cracks.clear(player, point.location());
@@ -93,6 +100,10 @@ public final class MiningManager {
         if (player != null) cracks.clear(player, session.orePoint().location());
     }
 
+    public void reloadRespawns() {
+        respawns.reload();
+    }
+
     public void resetAll() {
         for (UUID playerId : new java.util.HashSet<>(sessions.keySet())) {
             reset(playerId, true);
@@ -104,13 +115,25 @@ public final class MiningManager {
         respawns.shutdown();
     }
 
-    private void damageTool(ItemStack tool, int amount) {
+    private void damageTool(Player player, ItemStack tool, int amount) {
         ItemMeta meta = tool.getItemMeta();
         if (!(meta instanceof Damageable)) return;
+        int maxDurability = tool.getType().getMaxDurability();
+        if (maxDurability <= 0) return;
+
         Damageable damageable = (Damageable) meta;
         int unbreaking = tool.getEnchantmentLevel(Enchantment.UNBREAKING);
         int applied = Math.max(1, amount - unbreaking);
-        damageable.setDamage(damageable.getDamage() + applied);
+        int newDamage = damageable.getDamage() + applied;
+
+        if (newDamage >= maxDurability) {
+            tool.setAmount(Math.max(0, tool.getAmount() - 1));
+            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+            player.updateInventory();
+            return;
+        }
+
+        damageable.setDamage(newDamage);
         tool.setItemMeta(meta);
     }
 

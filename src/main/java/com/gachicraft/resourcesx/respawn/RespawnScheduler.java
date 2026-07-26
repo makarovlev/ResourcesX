@@ -27,6 +27,11 @@ public final class RespawnScheduler {
         task = plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 20L, 20L);
     }
 
+    public void reload() {
+        queue.clear();
+        restoreOnStartup();
+    }
+
     public void schedule(OrePoint point, int delaySeconds) {
         long respawnAt = System.currentTimeMillis() + delaySeconds * 1000L;
         point.setDepleted(true);
@@ -46,7 +51,7 @@ public final class RespawnScheduler {
             OrePoint point = config.registry().getById(entry.getKey());
             if (point == null) continue;
             if (entry.getValue() <= now) {
-                respawn(point);
+                point.spawnBlock();
             } else {
                 point.setDepleted(true);
                 point.location().getBlock().setType(config.replacementBlock(), false);
@@ -60,15 +65,10 @@ public final class RespawnScheduler {
         long now = System.currentTimeMillis();
         boolean changed = false;
         while (!queue.isEmpty() && queue.peek().respawnAtMillis() <= now) {
-            respawn(queue.poll().orePoint());
+            queue.poll().orePoint().spawnBlock();
             changed = true;
         }
         if (changed) persist();
-    }
-
-    private void respawn(OrePoint point) {
-        point.location().getBlock().setType(point.ore(), false);
-        point.setDepleted(false);
     }
 
     private void persist() {

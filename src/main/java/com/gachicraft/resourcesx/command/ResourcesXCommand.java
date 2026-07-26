@@ -24,6 +24,7 @@ public final class ResourcesXCommand implements CommandExecutor {
             }
             mining.resetAll();
             config.reload();
+            mining.reloadRespawns();
             sender.sendMessage(config.messages().format("admin.reload-success"));
             return true;
         }
