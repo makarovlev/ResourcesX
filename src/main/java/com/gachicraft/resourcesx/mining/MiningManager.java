@@ -4,6 +4,7 @@ import com.gachicraft.resourcesx.config.ConfigManager;
 import com.gachicraft.resourcesx.config.OreTypeConfig;
 import com.gachicraft.resourcesx.config.PickaxeConfig;
 import com.gachicraft.resourcesx.packet.CrackAnimationSender;
+import com.gachicraft.resourcesx.respawn.RespawnScheduler;
 import com.gachicraft.resourcesx.util.ActionBarUtil;
 import com.gachicraft.resourcesx.util.InventoryUtil;
 import java.util.HashMap;
@@ -25,9 +26,16 @@ public final class MiningManager {
     private final ConfigManager config;
     private final CrackAnimationSender cracks;
     private final MiningLockService locks = new MiningLockService();
+    private final RespawnScheduler respawns;
     private final Map<UUID, MiningSession> sessions = new HashMap<>();
 
-    public MiningManager(JavaPlugin plugin, ConfigManager config, CrackAnimationSender cracks) { this.plugin = plugin; this.config = config; this.cracks = cracks; }
+    public MiningManager(JavaPlugin plugin, ConfigManager config, CrackAnimationSender cracks) {
+        this.plugin = plugin;
+        this.config = config;
+        this.cracks = cracks;
+        this.respawns = new RespawnScheduler(plugin, config);
+        this.respawns.start();
+    }
 
     public void handleSwing(Player player, Block block) {
         if (block == null) return;
@@ -40,7 +48,7 @@ public final class MiningManager {
         OreTypeConfig oreType = config.oreType(point.ore());
         if (pickaxe == null || oreType == null || pickaxe.level() < oreType.level()) { player.sendMessage(config.messages().format("mining.too-weak-pickaxe")); locks.unlock(point.location()); return; }
 
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, config.idleResetSeconds() * 20 + 10, 255, false, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, config.idleResetSeconds() * 20 + 10, 255, false, false, false));
         MiningSession session = sessions.computeIfAbsent(player.getUniqueId(), id -> new MiningSession(id, point));
         if (!session.orePoint().location().equals(point.location())) reset(player.getUniqueId(), true);
         session = sessions.computeIfAbsent(player.getUniqueId(), id -> new MiningSession(id, point));
@@ -73,7 +81,7 @@ public final class MiningManager {
         cracks.clear(player, point.location());
         sessions.remove(player.getUniqueId());
         locks.unlock(point.location());
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> { point.location().getBlock().setType(point.ore(), false); point.setDepleted(false); }, point.config().cooldownSeconds() * 20L);
+        respawns.schedule(point, point.config().cooldownSeconds());
     }
 
     public void reset(UUID playerId, boolean silent) {
@@ -91,13 +99,16 @@ public final class MiningManager {
         }
     }
 
-    public void shutdown() { resetAll(); }
+    public void shutdown() {
+        resetAll();
+        respawns.shutdown();
+    }
 
     private void damageTool(ItemStack tool, int amount) {
         ItemMeta meta = tool.getItemMeta();
         if (!(meta instanceof Damageable)) return;
         Damageable damageable = (Damageable) meta;
-        int unbreaking = tool.getEnchantmentLevel(Enchantment.DURABILITY);
+        int unbreaking = tool.getEnchantmentLevel(Enchantment.UNBREAKING);
         int applied = Math.max(1, amount - unbreaking);
         damageable.setDamage(damageable.getDamage() + applied);
         tool.setItemMeta(meta);
