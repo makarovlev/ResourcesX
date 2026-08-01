@@ -43,12 +43,12 @@ public final class MiningManager {
         OrePoint point = config.registry().get(block.getLocation()).orElse(null);
         if (point == null || point.depleted()) return;
         if (block.getType() != point.ore()) return;
-        if (!locks.tryLock(point.location(), player.getUniqueId())) { player.sendMessage(config.messages().format("mining.locked-by-other")); return; }
+        if (!locks.tryLock(MiningLockService.oreKey(point.location()), player.getUniqueId())) { player.sendMessage(config.messages().format("mining.locked-by-other")); return; }
 
         ItemStack tool = player.getInventory().getItemInMainHand();
         PickaxeConfig pickaxe = config.pickaxe(tool.getType());
         OreTypeConfig oreType = config.oreType(point.ore());
-        if (pickaxe == null || oreType == null || pickaxe.level() < oreType.level()) { player.sendMessage(config.messages().format("mining.too-weak-pickaxe")); locks.unlock(point.location()); return; }
+        if (pickaxe == null || oreType == null || pickaxe.level() < oreType.level()) { player.sendMessage(config.messages().format("mining.too-weak-pickaxe")); locks.unlock(MiningLockService.oreKey(point.location())); return; }
 
         MiningSession session = sessions.computeIfAbsent(player.getUniqueId(), id -> new MiningSession(id, point));
         if (!session.orePoint().location().equals(point.location())) reset(player.getUniqueId(), true);
@@ -87,7 +87,7 @@ public final class MiningManager {
         point.setDepleted(true);
         cracks.clear(player, point.location());
         sessions.remove(player.getUniqueId());
-        locks.unlock(point.location());
+        locks.unlock(MiningLockService.oreKey(point.location()));
         respawns.schedule(point, point.config().cooldownSeconds());
     }
 

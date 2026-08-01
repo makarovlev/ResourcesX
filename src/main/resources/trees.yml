@@ -1,0 +1,19 @@
+trees:
+  oak_tree_1:
+    id: 1
+    center:
+      world: rpgwar
+      x: 99
+      y: 100
+      z: 99
+    blueprint: oak_tree
+
+blueprints:
+  oak_tree:
+    cooldown: 60
+    amount: 4-6
+    build:
+      0,0,0: oak_log[axis=y,break=true]
+      0,1,0: oak_log[axis=y,break=true]
+      0,2,0: oak_log[axis=y,break=true]
+      0,3,0: oak_leaves[persistent=true,protect=true]

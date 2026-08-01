@@ -14,6 +14,16 @@ forcePickaxes:
   IRON_PICKAXE: { level: 3, force: 25 }
   DIAMOND_PICKAXE: { level: 4, force: 40 }
   NETHERITE_PICKAXE: { level: 5, force: 55 }
+
+protectionTrees:
+  oak_tree: { level: 1, health: 100, damage: 5 }
+forceAxes:
+  WOODEN_AXE: { level: 1, force: 10 }
+  STONE_AXE: { level: 2, force: 15 }
+  IRON_AXE: { level: 3, force: 25 }
+  DIAMOND_AXE: { level: 4, force: 40 }
+  NETHERITE_AXE: { level: 5, force: 55 }
+
 mysql:
   enabled: false
   host: 127.0.0.1

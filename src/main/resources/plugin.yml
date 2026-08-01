@@ -9,8 +9,8 @@ description: Custom MMORPG resource mining for Purpur 1.20.6.
 commands:
   resourcesx:
     aliases: [rx]
-    description: Reload ResourcesX configuration.
-    usage: /<command> reload
+    description: Manage ResourcesX configuration and runtime resources.
+    usage: /<command> reload|removetree <id>
 permissions:
   resourcesx.admin:
     default: op
