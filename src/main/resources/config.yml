@@ -1,0 +1,25 @@
+configVersion: 1.0.0
+settings:
+  idle-reset-seconds: 2
+  hit-cooldown-millis: 833
+  replacement-block: COBBLESTONE
+  actionbar-bar-length: 10
+  use-crack-animation: true
+protectionOres:
+  COAL_ORE: { level: 1, health: 50, damage: 3 }
+  IRON_ORE: { level: 2, health: 75, damage: 5 }
+forcePickaxes:
+  WOODEN_PICKAXE: { level: 1, force: 10 }
+  STONE_PICKAXE: { level: 2, force: 15 }
+  IRON_PICKAXE: { level: 3, force: 25 }
+  DIAMOND_PICKAXE: { level: 4, force: 40 }
+  NETHERITE_PICKAXE: { level: 5, force: 55 }
+mysql:
+  enabled: false
+  host: 127.0.0.1
+  port: 3306
+  user: root
+  pass: password
+  base: ResourcesX
+  prefix: resourcesx_
+  reconnect_interval: 1000
